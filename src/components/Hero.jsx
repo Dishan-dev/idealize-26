@@ -126,6 +126,8 @@ export default function Hero() {
         style={{ mixBlendMode: "screen", opacity: 0.55 }}
       />
 
+      {/* ── Top Navbar Gradient Overlay ── */}
+      <div className="absolute top-0 left-0 w-full h-52 bg-gradient-to-b from-[#1e1b4b] to-transparent z-[2]" />
       <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-slate-950 to-transparent z-[2]" />
 
       {/* ── Hero Content ── */}

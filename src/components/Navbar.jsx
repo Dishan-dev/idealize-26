@@ -118,7 +118,7 @@ export default function Navbar({ activeSection, scrollToSection }) {
         <div className="hidden lg:flex items-center gap-6">
           {links.map(({ label, id }) => (
             <button key={label} onClick={() => handleNav(id)}
-              className={`nav-link ${activeSection === id ? "active" : ""}`}>
+              className={`nav-link ${(activeSection === id || (id === "partners" && activeSection === "memories")) ? "active" : ""}`}>
               {label}
             </button>
           ))}

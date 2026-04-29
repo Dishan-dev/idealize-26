@@ -13,7 +13,7 @@ import Countdown from "./components/countdown";
 import Memories from "./components/memory";
 import SpiderLoader from "./components/Loader";
 
-const SECTIONS = ["hero", "about", "categories", "awards", "timeline", "partners", "faq"];
+const SECTIONS = ["hero", "about", "categories", "awards", "timeline", "memories", "partners", "faq"];
 
 export default function App() {
   const containerRef = useRef(null);
@@ -136,16 +136,16 @@ export default function App() {
             <ScrollArrow onClick={() => scrollToNext("timeline")} />
           </section>
 
-          <section className="snap-section min-h-screen" ref={registerRef("partners")}>
+          <section className="snap-section min-h-screen" ref={registerRef("memories")}>
             <Memories />
-            <ScrollArrow onClick={() => scrollToNext("partners")} />
+            <ScrollArrow onClick={() => scrollToNext("memories")} />
           </section>
 
           {/* Note: In your original code, "partners" was duplicated. 
               I kept both as requested but they share the same ID. */}
           <section className="snap-section min-h-screen" ref={registerRef("partners")}>
             <Sponsors />
-            <ScrollArrow onClick={() => scrollToNext("timeline")} />
+            <ScrollArrow onClick={() => scrollToNext("partners")} />
           </section>
 
           <section className="snap-section-faq min-h-screen flex flex-col" ref={registerRef("faq")}>
