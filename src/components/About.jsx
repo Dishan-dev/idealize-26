@@ -1,6 +1,9 @@
 import logo from "../assets/idealizelogo.svg";
 import HangingSpider from "./hanging";
 
+//dele book link
+const DELEGATE_BOOKLET_LINK = "click.aiesec.lk/cs/idealize-2026-delegate-booklet";
+
 const tracks = [
   {
     icon: "lightbulb",
@@ -239,9 +242,9 @@ export default function About() {
             </p>
           </div>
           <div className="mt-12 flex gap-10">
-            <button className="w-50VH md:w-auto px-10 py-5 bg-primary text-white font-headline font-black uppercase tracking-widest text-lg hover:scale-105 active:scale-95 transition-all shadow-[8px_8px_0px_0px_rgba(77,96,189,0.5)]">
+            <a href={DELEGATE_BOOKLET_LINK} target="_blank" rel="noopener noreferrer" className="w-50VH md:w-auto px-10 py-5 bg-primary text-white font-headline font-black uppercase tracking-widest text-lg hover:scale-105 active:scale-95 transition-all shadow-[8px_8px_0px_0px_rgba(77,96,189,0.5)] inline-block text-center">
               Download the Delegate Booklet
-            </button>
+            </a>
           </div>
         </div>
 
