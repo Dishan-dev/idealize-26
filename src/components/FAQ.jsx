@@ -42,14 +42,14 @@ const faqs = [
     color: "text-blue-300",
     hoverBorder: "hover:border-blue-300/50",
     question: "Can we work on an existing project or idea?",
-    answer: "Projects must be original and developed specifically for Idealize 2025. However, you can build upon previous concepts if they are substantially improved or reimagined for this competition.",
+    answer: "Projects must be original and developed specifically for Idealize 2026. However, you can build upon previous concepts if they are substantially improved or reimagined for this competition.",
   },
   {
     num: "07.",
     color: "text-primary",
     hoverBorder: "hover:border-primary/50",
     question: "Is there any registration fee?",
-    answer: "No, participation in Idealize 2025 is completely free of charge. We believe in providing equal opportunities for all talented individuals regardless of financial background.",
+    answer: "No, participation in Idealize 2026 is completely free of charge. We believe in providing equal opportunities for all talented individuals regardless of financial background.",
   },
 ];
 export default function FAQ() {
