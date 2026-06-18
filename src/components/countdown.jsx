@@ -1,28 +1,57 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import WalkingSpider from "./spiderwalk";
 
-const REGISTRATION_START = new Date("2026-05-22T11:30:00");
-const TARGET_DATE = new Date("2026-06-08T00:00:00");
+// ==========================================
+// --- CENTRAL CONFIGURATION ---
+// Update these values as the event phases change
+// ==========================================
+const CONFIG = {
+  // Use ISO 8601 format. By default, this uses the user's local timezone.
+  openDate: new Date("2026-05-22T11:30:00"),
+  closeDate: new Date("2026-06-21T00:00:00"), // Updated to June 21, 2026
+  
+  labels: {
+    notOpenMsg: "Proposal submissions are not yet open. Stay tuned.",
+    closingInMsg: "Proposal submission closing in",
+    closedMsg: "Proposal submission portal has been closed",
+    buttonText: "Submit Proposal",
+  },
+  
+  submissionUrl: "https://click.aiesec.lk/cs/idealize-2026-proposal-submission-document"
+};
 
-function useCountdown(target) {
-  const calc = () => {
-    const diff = target - new Date();
-    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+// ==========================================
+// --- LOGIC HOOK ---
+// ==========================================
+function useCountdown(targetDate) {
+  const calculateTimeLeft = () => {
+    const difference = targetDate - new Date();
+    if (difference <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true };
+    
     return {
-      days:    Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours:   Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / (1000 * 60)) % 60),
-      seconds: Math.floor((diff / 1000) % 60),
+      days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+      minutes: Math.floor((difference / 1000 / 60) % 60),
+      seconds: Math.floor((difference / 1000) % 60),
+      isExpired: false
     };
   };
-  const [time, setTime] = useState(calc);
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft);
+
   useEffect(() => {
-    const timer = setInterval(() => setTime(calc()), 1000);
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
     return () => clearInterval(timer);
-  }, []);
-  return time;
+  }, [targetDate]);
+
+  return timeLeft;
 }
 
+// ==========================================
+// --- UI COMPONENTS ---
+// ==========================================
 function Digit({ value, label, color, bgIcon }) {
   return (
     <div className={`group relative p-1 bg-gradient-to-br ${color} to-transparent`}>
@@ -50,9 +79,13 @@ function Digit({ value, label, color, bgIcon }) {
 }
 
 export default function Countdown() {
-  const registrationOpen = new Date() >= REGISTRATION_START;
-  const { days, hours, minutes, seconds } = useCountdown(TARGET_DATE);
-  const isExpired = days === 0 && hours === 0 && minutes === 0 && seconds === 0;
+  const now = new Date();
+  const isBeforeOpen = now < CONFIG.openDate;
+  
+  const { days, hours, minutes, seconds, isExpired } = useCountdown(CONFIG.closeDate);
+
+  // Derived state to cleanly handle what UI to show
+  const isActive = !isBeforeOpen && !isExpired;
 
   const formatTime = (date) =>
     date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -68,81 +101,71 @@ export default function Countdown() {
     <section className="py-32 relative" id="countdown">
       <div className="max-w-[1200px] mx-auto px-6">
 
-        {/* Header */}
+        {/* Dynamic Header Status */}
         <div className="text-center mb-16 md:mb-20">
           <div className="inline-flex items-center gap-2 px-4 py-1 mb-6 border border-primary/40 bg-primary/10">
             <span className={`w-2 h-2 rounded-full ${
-              !registrationOpen ? "bg-yellow-400 animate-pulse" :
-              isExpired ? "bg-red-500" :
-              "bg-primary animate-pulse"
+              isBeforeOpen ? "bg-yellow-400 animate-pulse" :
+              isExpired ? "bg-red-500" : "bg-primary animate-pulse"
             }`}></span>
             <span
               className="font-bold text-xs tracking-widest text-primary uppercase"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              {!registrationOpen
-                ? `Registrations open on ${REGISTRATION_START.toDateString()} at ${formatTime(REGISTRATION_START)}`
-                : isExpired
-                ? "Registration Closed"
-                : "Registration closing in"}
+              {isBeforeOpen 
+                ? `Proposals open on ${CONFIG.openDate.toDateString()} at ${formatTime(CONFIG.openDate)}`
+                : isExpired 
+                ? CONFIG.labels.closedMsg
+                : CONFIG.labels.closingInMsg}
             </span>
           </div>
         </div>
 
-        {/* Countdown — only show if registration is open and not expired */}
-        {registrationOpen && !isExpired && (
+        {/* State 1: Active Countdown */}
+        {isActive && (
           <div className="grid grid-cols-4 gap-3 md:gap-6 max-w-3xl mx-auto">
-            {units.map(({ value, label, color, bgIcon }) => (
-              <Digit key={label} value={value} label={label} color={color} bgIcon={bgIcon} />
+            {units.map((unit) => (
+              <Digit key={unit.label} {...unit} />
             ))}
           </div>
         )}
 
-        {/* Expired state */}
-        {registrationOpen && isExpired && (
+        {/* State 2: Expired Lock Screen */}
+        {isExpired && !isBeforeOpen && (
           <div className="text-center py-16">
             <span className="material-symbols-outlined text-7xl text-red-500 mb-4 block">lock</span>
-            <p
-              className="text-slate-400 uppercase tracking-widest font-bold text-sm"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Registration portal has been closed
+            <p className="text-slate-400 uppercase tracking-widest font-bold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              {CONFIG.labels.closedMsg}
             </p>
           </div>
         )}
 
-        {/* Not yet open state */}
-        {!registrationOpen && (
+        {/* State 3: Not Yet Open */}
+        {isBeforeOpen && (
           <div className="text-center py-16">
             <span className="material-symbols-outlined text-7xl text-yellow-400 mb-4 block">hourglass_top</span>
-            <p
-              className="text-slate-400 uppercase tracking-widest font-bold text-sm"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Registrations are not yet open. Stay tuned.
+            <p className="text-slate-400 uppercase tracking-widest font-bold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              {CONFIG.labels.notOpenMsg}
             </p>
           </div>
         )}
 
-        {/* CTA — only show if registration is open */}
-        {registrationOpen && !isExpired && (
+        {/* Call To Action (Only visible when active) */}
+        {isActive && (
           <div className="text-center mt-12 md:mt-16">
             <button
               className="px-8 md:px-12 py-4 md:py-5 bg-primary text-white font-headline font-black uppercase tracking-widest text-base md:text-lg hover:scale-105 active:scale-95 transition-all shadow-[8px_8px_0px_0px_rgba(77,96,189,0.4)]"
-              onClick={() => window.open("https://tally.so/r/Np4V0p", "_blank")}
+              onClick={() => window.open(CONFIG.submissionUrl, "_blank")}
             >
-              Register Now
+              {CONFIG.labels.buttonText}
             </button>
-            <p
-              className="text-slate-500 text-xs uppercase tracking-widest mt-4 font-bold"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              Deadline: {TARGET_DATE.toDateString()} at {formatTime(TARGET_DATE)}
+            <p className="text-slate-500 text-xs uppercase tracking-widest mt-4 font-bold" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Deadline: {CONFIG.closeDate.toDateString()} at {formatTime(CONFIG.closeDate)}
             </p>
           </div>
         )}
 
-        {/* Spider rows */}
+        {/* Spider Theme Component */}
         <div className="mt-16">
           <WalkingSpider count={2} size={80} speeds={[0.04, 0.07]} />
         </div>
